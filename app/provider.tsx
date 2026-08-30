@@ -15,7 +15,7 @@ const [userDetails, setUserDetails] = useState(null);
   }
     return (
     <div>
-      <div>
+      <div className="max-w-7xl mx-auto">
         <UserDetailContext.Provider value={{ userDetails, setUserDetails  }}>
         {children}
         </UserDetailContext.Provider>
