@@ -14,13 +14,11 @@ const [userDetails, setUserDetails] = useState(null);
     setUserDetails(result?.data);
   }
     return (
-    <div>
-      <div className="max-w-7xl mx-auto">
-        <UserDetailContext.Provider value={{ userDetails, setUserDetails  }}>
+    <UserDetailContext.Provider value={{ userDetails, setUserDetails }}>
+      <div className="flex flex-col flex-1 w-full">
         {children}
-        </UserDetailContext.Provider>
-        </div>
-    </div>
+      </div>
+    </UserDetailContext.Provider>
   )
 }
 
