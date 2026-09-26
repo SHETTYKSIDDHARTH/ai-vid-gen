@@ -5,7 +5,7 @@ import { db } from "@/config/db";
 import { usersTable, coursesTable, chaptersTable } from "@/config/schema";
 import { generateCourseNotesPdf } from "@/lib/course-notes-pdf";
 import { generateCourseQA } from "@/lib/course-qa";
-
+import { generateCourseMCQs } from "@/lib/course-mcq";
 export async function GET(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
 
@@ -30,8 +30,17 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ id: stri
     .where(eq(chaptersTable.courseId, course.id))
     .orderBy(chaptersTable.chapterOrder);
 
-  const qa = await generateCourseQA(course.title ?? "", chapters);
-  const pdfBytes = await generateCourseNotesPdf(course, chapters, qa);
+const [qa, mcqs] = await Promise.all([
+  generateCourseQA(course.title ?? "", chapters),
+  generateCourseMCQs(course.title ?? "", chapters),
+]);
+
+const pdfBytes = await generateCourseNotesPdf(
+  course,
+  chapters,
+  qa,
+  mcqs
+);
   const fileName = `${(course.courseSlug || course.title || "course-notes").replace(/[^a-z0-9-]/gi, "-")}.pdf`;
 
   return new NextResponse(Buffer.from(pdfBytes), {
