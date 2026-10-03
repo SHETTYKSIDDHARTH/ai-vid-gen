@@ -5,7 +5,7 @@ import { db } from "@/config/db";
 import { usersTable, coursesTable, chaptersTable } from "@/config/schema";
 import { generateCourseNotesPdf } from "@/lib/course-notes-pdf";
 import { generateCourseQA } from "@/lib/course-qa";
-import { generateCourseMCQs } from "@/lib/course-mcq";
+import { getOrCreateCourseMCQs } from "@/lib/course-mcq-store";
 export async function GET(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
 
@@ -32,7 +32,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ id: stri
 
 const [qa, mcqs] = await Promise.all([
   generateCourseQA(course.title ?? "", chapters),
-  generateCourseMCQs(course.title ?? "", chapters),
+  getOrCreateCourseMCQs(course.id),
 ]);
 
 const pdfBytes = await generateCourseNotesPdf(

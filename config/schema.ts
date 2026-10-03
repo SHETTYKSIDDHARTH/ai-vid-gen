@@ -37,3 +37,19 @@ export const chaptersTable = pgTable("chapters", {
   videoUrl: varchar({ length: 500 }),
   videoStatus: varchar({ length: 50 }).notNull().default("pending"),
 });
+
+export const courseMcqsTable = pgTable("course_mcqs", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+
+  courseId: integer()
+    .notNull()
+    .references(() => coursesTable.id, { onDelete: "cascade" }),
+
+  questionOrder: integer().notNull(),
+
+  question: text().notNull(),
+
+  options: text().array().notNull(),
+
+  answer: text().notNull(),
+});
