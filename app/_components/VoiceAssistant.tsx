@@ -388,7 +388,7 @@ function VoiceAssistant() {
     const onKeyDown = (event: KeyboardEvent) => {
       // Single dedicated key (no modifier chord) so the shortcut stays reachable
       // for people who can't reliably hold two keys down at once.
-      if (event.key.toLowerCase() !== "m") return
+      if (typeof event.key !== "string" || event.key.toLowerCase() !== "m") return;
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
       const target = event.target as HTMLElement | null
       if (target && (["INPUT", "TEXTAREA"].includes(target.tagName) || target.isContentEditable)) return
