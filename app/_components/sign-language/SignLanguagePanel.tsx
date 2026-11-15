@@ -77,7 +77,7 @@ export default function SignLanguagePanel({
 
       {/* Label */}
       <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20">
-        <span className="text-base">🤟</span>
+        <span className="text-sm font-semibold">ISL</span>
         <span className="text-xs text-violet-400 font-medium">Indian Sign Language</span>
       </div>
 

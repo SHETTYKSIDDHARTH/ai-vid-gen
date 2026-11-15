@@ -86,7 +86,7 @@ function ChapterMedia({
         {/* ISL badge */}
         <div className="flex items-center gap-1.5 mb-2">
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-400 border border-violet-500/25">
-            🤟 ISL Mode
+             ISL Mode
           </span>
         </div>
 
@@ -119,7 +119,7 @@ function ChapterMedia({
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/10">
           <span className="relative flex items-center justify-center size-14 rounded-full bg-violet-500/15 border-2 border-violet-500/40">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-500/30" />
-            <span className="relative text-2xl">🤟</span>
+            <span className="relative text-2xl">ISL</span>
           </span>
           <span className="text-sm font-semibold text-foreground">
             {islVideoStatus === "processing"

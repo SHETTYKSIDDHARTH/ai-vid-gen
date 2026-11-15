@@ -159,7 +159,11 @@ function Hero() {
             onClick={onGenerateISL}
             title="Generate with Indian Sign Language support"
           >
-            {islLoading ? <LoaderCircle className="icon-sm animate-spin" /> : <span>🤟</span>}
+            {islLoading ? (
+  <LoaderCircle className="icon-sm animate-spin" />
+) : (
+  <span className="text-xs font-bold">ISL</span>
+)}
             <span className="hidden sm:inline ml-1 text-violet-400 font-medium">ISL</span>
           </Button>
         </InputGroupAddon>

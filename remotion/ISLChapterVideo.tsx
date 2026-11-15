@@ -142,7 +142,7 @@ export function ISLChapterVideo({ title, wordSegments, durationInFrames }: ISLCh
         borderRadius: 20,
         letterSpacing: 1,
       }}>
-        🤟 ISL MODE
+        INDIAN SIGN LANGUAGE
       </div>
 
       {/* Chapter Title */}
