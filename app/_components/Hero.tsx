@@ -24,6 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/components/ui/toast"
 import { Send, LoaderCircle, Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { QUICK_VIDEO_SUGGESTIONS } from '@/data/constant'
 function Hero() {
     const items = [
@@ -34,6 +35,7 @@ function Hero() {
   const [userInput, setUserInput] = useState("")
   const [courseType, setCourseType] = useState("full-course")
   const [loading, setLoading] = useState(false)
+  const [islLoading, setIslLoading] = useState(false)
 
   const onGenerate = async () => {
     if (!userInput.trim()) {
@@ -62,6 +64,37 @@ function Hero() {
       // handled by toast.promise above
     } finally {
       setLoading(false)
+    }
+  }
+
+  const onGenerateISL = async () => {
+    if (!userInput.trim()) {
+      toast.add({ title: "Please enter a topic to generate an ISL course.", type: "warning" })
+      return
+    }
+    setIslLoading(true)
+    const request = axios.post('/api/generate-course', {
+      topic: userInput,
+      courseType,
+      generationMode: "isl",
+    })
+
+    toast.promise(request, {
+      loading: "Generating ISL course...",
+      success: "ISL Course generated successfully!",
+      error: (err) =>
+        axios.isAxiosError(err) && err.response?.data?.message
+          ? err.response.data.message
+          : "Something went wrong while generating the ISL course.",
+    }).catch(() => {})
+
+    try {
+      const result = await request
+      router.push(`/course/${result.data.course.id}`)
+    } catch {
+      // handled by toast.promise above
+    } finally {
+      setIslLoading(false)
     }
   }
   return (
@@ -113,11 +146,22 @@ function Hero() {
             className="ml-auto rounded-full"
             size="sm"
             variant="default"
-            disabled={loading}
+            disabled={loading || islLoading}
             onClick={onGenerate}
           >
             {loading ? <LoaderCircle className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
           </InputGroupButton>
+          <Button
+            className="rounded-full ml-1"
+            size="sm"
+            variant="outline"
+            disabled={loading || islLoading}
+            onClick={onGenerateISL}
+            title="Generate with Indian Sign Language support"
+          >
+            {islLoading ? <LoaderCircle className="icon-sm animate-spin" /> : <span>🤟</span>}
+            <span className="hidden sm:inline ml-1 text-violet-400 font-medium">ISL</span>
+          </Button>
         </InputGroupAddon>
       </InputGroup>
     </div>

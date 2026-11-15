@@ -35,7 +35,11 @@ export default async function CoursePage(props: PageProps<"/course/[id]">) {
     .orderBy(chaptersTable.chapterOrder);
 
   const isGenerating = chapters.some(
-    (chapter) => chapter.videoStatus === "pending" || chapter.videoStatus === "processing"
+    (chapter) =>
+      chapter.videoStatus === "pending" ||
+      chapter.videoStatus === "processing" ||
+      chapter.islVideoStatus === "pending" ||
+      chapter.islVideoStatus === "processing"
   );
 
   return (
@@ -89,6 +93,9 @@ export default async function CoursePage(props: PageProps<"/course/[id]">) {
               chapterId={chapter.id}
               videoUrl={chapter.videoUrl}
               videoStatus={chapter.videoStatus}
+              islVideoUrl={chapter.islVideoUrl}
+              islVideoStatus={chapter.islVideoStatus}
+              wordSegments={chapter.wordSegments}
             />
           </div>
 

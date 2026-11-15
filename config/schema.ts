@@ -21,6 +21,7 @@ export const coursesTable = pgTable("courses", {
   totalChapters: integer(),
   status: varchar({ length: 50 }).notNull().default("draft"),
   createdAt: timestamp().notNull().defaultNow(),
+  generationMode: varchar({ length: 20 }).notNull().default("regular"),
 });
 
 export const chaptersTable = pgTable("chapters", {
@@ -36,6 +37,9 @@ export const chaptersTable = pgTable("chapters", {
   captionSegments: text(),
   videoUrl: varchar({ length: 500 }),
   videoStatus: varchar({ length: 50 }).notNull().default("pending"),
+  islVideoUrl: varchar({ length: 500 }),
+  islVideoStatus: varchar({ length: 50 }),
+  wordSegments: text(),
 });
 
 export const courseMcqsTable = pgTable("course_mcqs", {

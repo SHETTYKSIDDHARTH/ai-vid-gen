@@ -8,6 +8,7 @@ import { z } from "zod";
 import { usersTable, coursesTable, chaptersTable } from "@/config/schema";
 import { db } from "@/config/db";
 import { bundleRemotionProject, generateChapterMedia } from "@/lib/course-media";
+import { generateISLChapterVideo } from "@/lib/isl-media";
 import { logApiError } from "@/lib/log-api-error";
 
 const COURSE_CONFIG_PROMPT = `You are an expert AI Course Architect for an AI-powered Video Course Generator platform.
@@ -130,7 +131,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const { topic, courseType } = await req.json();
+  const { topic, courseType, generationMode = "regular" } = await req.json();
   if (!topic || !courseType) {
     return NextResponse.json({ message: "topic and courseType are required" }, { status: 400 });
   }
@@ -162,6 +163,7 @@ export async function POST(req: NextRequest) {
       level: outline.level,
       totalChapters: outline.totalChapters,
       status: "ready",
+      generationMode,
     })
     .returning();
 
@@ -171,6 +173,8 @@ export async function POST(req: NextRequest) {
     )
   );
 
+  const isISL = generationMode === "isl";
+
   const chapterRows = outline.chapters.map((chapter, index) => ({
     courseId: course.id,
     chapterOrder: index,
@@ -178,7 +182,8 @@ export async function POST(req: NextRequest) {
     title: chapter.chapterTitle,
     subContent: chapter.subContent,
     script: scripts[index],
-    videoStatus: "pending",
+    videoStatus: isISL ? "ready" : "pending",
+    islVideoStatus: isISL ? "pending" : null,
   }));
 
   const insertedChapters = await db.insert(chaptersTable).values(chapterRows).returning();
@@ -192,7 +197,11 @@ export async function POST(req: NextRequest) {
     const bundleLocation = await bundleRemotionProject();
     for (const chapter of insertedChapters) {
       try {
-        await generateChapterMedia(chapter, bundleLocation);
+        if (isISL) {
+          await generateISLChapterVideo(chapter, bundleLocation);
+        } else {
+          await generateChapterMedia(chapter, bundleLocation);
+        }
       } catch (error) {
         console.error(`Failed to generate media for chapter ${chapter.id}:`, error);
       }
