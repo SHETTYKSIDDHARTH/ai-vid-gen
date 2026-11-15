@@ -91,9 +91,9 @@ function ChapterMedia({
         </div>
 
         {/* Side-by-side */}
-        <div className="flex gap-3 items-start">
-          {/* Video — 65% */}
-          <div className="flex-[65]">
+        <div className="flex flex-col sm:flex-row gap-3 items-start">
+          {/* Video — full width on mobile, 65% on desktop */}
+          <div className="w-full sm:flex-[65]">
             <video
               ref={videoRef}
               controls
@@ -102,8 +102,8 @@ function ChapterMedia({
             />
           </div>
 
-          {/* Avatar panel — 35% */}
-          <div className="flex-[35] flex justify-center">
+          {/* Avatar panel — full width on mobile, 35% on desktop */}
+          <div className="w-full sm:flex-[35] flex justify-center">
             <SignLanguagePanel videoRef={videoRef} wordSegments={segments} />
           </div>
         </div>
