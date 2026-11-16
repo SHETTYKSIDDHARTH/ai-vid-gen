@@ -24,8 +24,8 @@ export function useAvatarAnimator() {
   const stateRef = useRef<AvatarAnimatorRef>({
     frameQueue: [],
     pending: false,
-    speed: 0.05,
-    pause: 350,
+    speed: 0.15,
+    pause: 200,
     bones: {},
   });
 

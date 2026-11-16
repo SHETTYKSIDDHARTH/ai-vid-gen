@@ -14,6 +14,21 @@ import type { ISLChapterVideoProps } from "@/remotion/ISLChapterVideo";
 const FPS = 30;
 const SECONDS_PER_LETTER = 1.0;
 
+// Cloudinary rejects videos above 104,857,600 bytes (100 MiB) on this plan.
+// Stay safely under it so we never render a whole video only to fail the upload.
+const MAX_UPLOAD_BYTES = 95 * 1024 * 1024;
+
+// Render quality tiers, best first. The ISL video is just text on black, so even
+// heavy compression stays perfectly readable. If a render is still too big we
+// fall through to the next (smaller) tier.
+const RENDER_TIERS = [
+  { crf: 32, scale: 0.75 }, // 960x540
+  { crf: 40, scale: 0.5 }, // 640x360
+];
+
+// Very long videos skip straight to the smallest tier to avoid a wasted render.
+const AGGRESSIVE_TIER_THRESHOLD_SEC = 25 * 60;
+
 export async function generateISLChapterVideo(
   chapter: { id: number; title: string; script: string | null },
   bundleLocation: string
@@ -43,24 +58,56 @@ export async function generateISLChapterVideo(
       durationInFrames,
     };
 
+    let videoBuffer: Buffer;
+
     const composition = await selectComposition({
       serveUrl: bundleLocation,
       id: "ISLChapterVideo",
       inputProps,
     });
 
-    const outputLocation = path.join(os.tmpdir(), `isl-${crypto.randomUUID()}.mp4`);
+    const startTier = totalDurationSec > AGGRESSIVE_TIER_THRESHOLD_SEC ? RENDER_TIERS.length - 1 : 0;
+    let outputLocation: string | null = null;
 
-    await renderMedia({
-      composition,
-      serveUrl: bundleLocation,
-      codec: "h264",
-      outputLocation,
-      inputProps,
-    });
+    try {
+      for (let tierIndex = startTier; tierIndex < RENDER_TIERS.length; tierIndex++) {
+        const tier = RENDER_TIERS[tierIndex];
+        const candidate = path.join(os.tmpdir(), `isl-${crypto.randomUUID()}.mp4`);
 
-    const videoBuffer = await fs.readFile(outputLocation);
-    await fs.unlink(outputLocation);
+        await renderMedia({
+          composition,
+          serveUrl: bundleLocation,
+          codec: "h264",
+          outputLocation: candidate,
+          inputProps,
+          crf: tier.crf,
+          scale: tier.scale,
+          muted: true,
+          x264Preset: "veryfast",
+        });
+
+        const { size } = await fs.stat(candidate);
+        if (size <= MAX_UPLOAD_BYTES) {
+          outputLocation = candidate;
+          break;
+        }
+
+        console.warn(
+          `[ISL] Render at crf ${tier.crf} / scale ${tier.scale} was ${size} bytes (limit ${MAX_UPLOAD_BYTES}), trying a smaller tier`
+        );
+        await fs.unlink(candidate).catch(() => {});
+      }
+
+      if (!outputLocation) {
+        throw new Error("ISL video is too large to upload even at the lowest quality; the script is too long");
+      }
+
+      videoBuffer = await fs.readFile(outputLocation);
+    } finally {
+      if (outputLocation) {
+        await fs.unlink(outputLocation).catch(() => {});
+      }
+    }
 
     const uploadResult = await uploadBufferToCloudinary(videoBuffer, "isl-videos");
 

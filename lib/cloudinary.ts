@@ -28,4 +28,29 @@ export function uploadBufferToCloudinary(buffer: Buffer, folder: string): Promis
   });
 }
 
+export function uploadLargeVideoToCloudinary(
+  filePath: string,
+  folder: string
+): Promise<{ secure_url: string }> {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_large(
+      filePath,
+      {
+        resource_type: "video",
+        folder,
+        chunk_size: 6_000_000,
+      },
+      (error, result) => {
+        if (error || !result) {
+          const finalError = error ?? new Error("Cloudinary upload failed");
+          logApiError("Cloudinary", finalError);
+          reject(finalError);
+          return;
+        }
+        resolve(result as { secure_url: string });
+      }
+    );
+  });
+}
+
 export default cloudinary;

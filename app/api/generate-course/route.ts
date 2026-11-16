@@ -104,15 +104,25 @@ This narration will be read aloud by a text-to-speech engine, so it must be pure
 Never include literal code syntax, function calls, symbols, or punctuation a screen reader would mispronounce (no parentheses, brackets, plus/equals signs, semicolons, camelCase identifiers written as code, etc.).
 Describe code concepts entirely in plain spoken English instead. For example, say "calling the set count function and adding one to the current count" rather than writing "setCount(count + 1)".`;
 
+const ISL_NARRATION_PROMPT = `You are an educational scriptwriter creating scripts for Indian Sign Language (ISL) video lessons where an avatar fingerspells each word letter-by-letter.
+
+CRITICAL RULES:
+1. TOTAL LENGTH: Keep the entire chapter script between 20 and 30 words total. Absolutely do NOT exceed 35 words.
+2. STRUCTURE: exactly 3 short, punchy sentences (7 to 10 words per sentence).
+3. CONTENT: State only the single core takeaway, main definition, or fundamental idea.
+4. VOCABULARY: Use simple, clear, standard English words that are easy to spell out.
+5. FORMAT: Output ONLY the raw sentences. No markdown, no bullet points, no labels, no emojis.`;
+
 async function generateChapterScript(
   courseTopic: string,
   chapterTitle: string,
-  subContent: string[]
+  subContent: string[],
+  isISL = false
 ): Promise<string> {
   try {
     const { text } = await generateText({
       model: google("gemini-3.5-flash-lite"),
-      system: NARRATION_PROMPT,
+      system: isISL ? ISL_NARRATION_PROMPT : NARRATION_PROMPT,
       prompt: `Course topic: "${courseTopic}"\nChapter: "${chapterTitle}"\nBullet points:\n${subContent
         .map((point) => `- ${point}`)
         .join("\n")}`,
@@ -167,13 +177,13 @@ export async function POST(req: NextRequest) {
     })
     .returning();
 
+  const isISL = generationMode === "isl";
+
   const scripts = await Promise.all(
     outline.chapters.map((chapter) =>
-      generateChapterScript(topic, chapter.chapterTitle, chapter.subContent)
+      generateChapterScript(topic, chapter.chapterTitle, chapter.subContent, isISL)
     )
   );
-
-  const isISL = generationMode === "isl";
 
   const chapterRows = outline.chapters.map((chapter, index) => ({
     courseId: course.id,
